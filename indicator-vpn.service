@@ -1,0 +1,10 @@
+[Unit]
+Description=NordVPN indicator applet
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/lgeoffroy/bin/indicator-vpn/indicator-vpn.py
+
+[Install]
+WantedBy=default.target
