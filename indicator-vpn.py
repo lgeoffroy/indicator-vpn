@@ -45,6 +45,21 @@ class IndicatorVpn:
         self.disconnect_menu.connect('activate', self.disconnect)
         self.menu.append(self.disconnect_menu)
 
+        countries_menu = Gtk.Menu()
+        countries = [menu for menu in
+                        filter(None, re.split('\t|\n| |-|\\|/|\|', self.transform_output(subprocess.run(['nordvpn', 'countries'], stdout=subprocess.PIPE))))]
+        countries.sort()
+        for country in countries:
+            item = Gtk.MenuItem()
+            item.set_label(re.sub('_', ' ', country))
+            item.connect('activate', self.change_server, country)
+            countries_menu.append(item)
+
+        self.change_server_menu = Gtk.MenuItem()
+        self.change_server_menu.set_label('Choose server...')
+        self.change_server_menu.set_submenu(countries_menu)
+        self.menu.append(self.change_server_menu)
+
         item = Gtk.SeparatorMenuItem()
         self.menu.append(item)
 
@@ -78,22 +93,28 @@ class IndicatorVpn:
             self.set_icon('connected.png' if state == 'Connected' else 'disconnected.png')
             self.connect_menu.set_sensitive(False if state == 'Connected' else True)
             self.disconnect_menu.set_sensitive(True if state == 'Connected' else False)
+            self.change_server_menu.set_label('Change server...' if state == 'Connected' else 'Choose server...')
             self.state = state
         return True
 
     def connect(self, widget):
-        self.status_menu.set_label('Connecting...')
-        result = subprocess.run(['nordvpn', 'c'], stdout=subprocess.PIPE)
+        result = subprocess.run(['nordvpn', 'connect'], stdout=subprocess.PIPE)
         text = self.transform_output(result).split('\n')[1]
         self.send_notification(text)
         self.set_icon('connected.png')
 
     def disconnect(self, widget):
-        self.status_menu.set_label('Disconnecting...')
-        result = subprocess.run(['nordvpn', 'd'], stdout=subprocess.PIPE)
+        result = subprocess.run(['nordvpn', 'disconnect'], stdout=subprocess.PIPE)
         text = self.transform_output(result)
         self.send_notification(text)
         self.set_icon('disconnected.png')
+
+    def change_server(self, widget, country):
+        with open(os.devnull, 'w') as devnull:
+            subprocess.run(['nordvpn', 'disconnect'], stdout=devnull)
+        result = subprocess.run(['nordvpn', 'connect', country], stdout=subprocess.PIPE)
+        text = self.transform_output(result).split('\n')[1]
+        self.send_notification(text)
 
     def quit(self, widget):
         Gtk.main_quit()

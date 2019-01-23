@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=NordVPN Indicator
+Comment=NordVPN Indicator
+Exec=/home/lgeoffroy/bin/indicator-vpn.py
+Terminal=False
+Type=Application
+Icon=/home/lgeoffroy/bin/indicator-vpn/icons/nordvpn.png
+Categories=GNOME;VPN;
+Nodisplay=true
+Onlyshowin=Unity;GNOME;
+X-GNOME-Autostart-enabled=true
+X-Ubuntu-Gettext-domain=indicator-vpn
+
